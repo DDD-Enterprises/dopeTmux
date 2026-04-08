@@ -1,7 +1,7 @@
 dopetask:
   cli_min_version: 0.5.1
   pin_type: git_commit
-  pin_value: UNKNOWN
+  pin_value: 9379e5fe34b7ad842c2a85e12c7d3a84bff290fa
 platform:
   model: gpt-5.2-thinking
   target: chatgpt
