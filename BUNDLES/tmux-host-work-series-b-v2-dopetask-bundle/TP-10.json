@@ -1,0 +1,99 @@
+{
+  "id": "TP-10",
+  "project": "tmux-host",
+  "target": "Implement deterministic recovery actions for missing panes, pane respawn, and canonical layout reset.",
+  "invariants": [
+    "Preserve the tmux-host repo structure under src/tmux_host/ and keep subsystem boundaries intact.",
+    "Do not reintroduce Dopemux-specific ownership into host core; Dopemux remains an integration profile.",
+    "Keep desktop, mobile, CLI, and tmux-native surfaces consuming the same derived state model where UI/state files are touched.",
+    "Do not broaden allowlists or mix unrelated cleanup into these packets.",
+    "Recovery must return to declared profile intent, not accidental historical geometry.",
+    "Reset layout and respawn must operate through metadata and declared profile/adapters."
+  ],
+  "depends_on": [
+    "TP-09"
+  ],
+  "series": {
+    "id": "tmux-host-work-series-b-v2",
+    "base_branch": "main",
+    "parent_tp_id": "TP-09",
+    "final_packet": false
+  },
+  "commit": {
+    "message": "Implement recovery and respawn semantics",
+    "allowlist": [
+      "docs/reference/recovery.md",
+      "src/tmux_host/cli/commands_lifecycle.py",
+      "src/tmux_host/core/action_service.py",
+      "src/tmux_host/core/lifecycle_service.py",
+      "src/tmux_host/tmux/layout.py",
+      "src/tmux_host/tmux/panes.py",
+      "src/tmux_host/tmux/sessions.py",
+      "tests/integration/test_recovery_missing_pane.py",
+      "tests/integration/test_respawn_semantics.py",
+      "tests/integration/test_reset_layout.py"
+    ],
+    "verify": [
+      "pytest -q tests/integration/test_recovery_missing_pane.py tests/integration/test_respawn_semantics.py tests/integration/test_reset_layout.py"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step_1",
+      "task": "Document the recovery model and add CLI/core entrypoints for respawn and reset-layout using declared profile intent.",
+      "requirements": [
+        "Do not revive unknown panes of unknown origin.",
+        "Keep actions explicit and command-equivalent across surfaces."
+      ],
+      "expected_files": [
+        "docs/reference/recovery.md",
+        "src/tmux_host/cli/commands_lifecycle.py",
+        "src/tmux_host/core/action_service.py",
+        "src/tmux_host/core/lifecycle_service.py"
+      ],
+      "validation": [
+        "test -f docs/reference/recovery.md",
+        "python -m compileall src/tmux_host/cli src/tmux_host/core"
+      ]
+    },
+    {
+      "id": "step_2",
+      "task": "Implement missing-pane recreation, metadata-preserving respawn, and canonical layout reapplication in the tmux layer.",
+      "requirements": [
+        "Use metadata and declared pane specs for lookup and recreation.",
+        "Do not convert reset-layout into arbitrary saved-geometry replay.",
+        "Keep recovery deterministic."
+      ],
+      "expected_files": [
+        "src/tmux_host/tmux/layout.py",
+        "src/tmux_host/tmux/panes.py",
+        "src/tmux_host/tmux/sessions.py"
+      ],
+      "validation": [
+        "python -m compileall src/tmux_host/tmux",
+        "test -f src/tmux_host/tmux/layout.py"
+      ]
+    },
+    {
+      "id": "step_3",
+      "task": "Add integration tests for missing-pane recovery, pane respawn, and reset-layout behavior.",
+      "requirements": [
+        "Test recovery against declared pane ids, not position-only assumptions.",
+        "Keep tests specific to recovery semantics."
+      ],
+      "expected_files": [
+        "tests/integration/test_recovery_missing_pane.py",
+        "tests/integration/test_respawn_semantics.py",
+        "tests/integration/test_reset_layout.py"
+      ],
+      "validation": [
+        "pytest -q tests/integration/test_recovery_missing_pane.py tests/integration/test_respawn_semantics.py tests/integration/test_reset_layout.py"
+      ],
+      "context_files": [
+        "src/tmux_host/tmux/panes.py",
+        "src/tmux_host/tmux/layout.py",
+        "src/tmux_host/core/lifecycle_service.py"
+      ]
+    }
+  ]
+}

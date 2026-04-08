@@ -1,0 +1,95 @@
+{
+  "id": "TP-17",
+  "project": "tmux-host",
+  "target": "Implement the fixed adapter registry and explicit host-to-adapter invocation contract for shell, codex, claude, copilot, and gemini.",
+  "invariants": [
+    "Keep tmux-host as an external host runtime; do not bake Dopemux-specific ownership into host core.",
+    "Preserve the source-first repo structure under src/tmux_host/ and the UI docs under docs/ui/.",
+    "Do not add broad allowlists or unrelated cleanup.",
+    "The adapter set stays explicit in v1.",
+    "Adapters own tool-specific invocation details; host core stays tool-agnostic."
+  ],
+  "depends_on": [
+    "TP-16"
+  ],
+  "series": {
+    "id": "tmux-host-work-series-a-v3",
+    "base_branch": "main",
+    "parent_tp_id": "TP-16",
+    "final_packet": false
+  },
+  "commit": {
+    "message": "Implement adapter registry and invocation contract",
+    "allowlist": [
+      "docs/reference/adapter-contract.md",
+      "src/tmux_host/adapters/base.py",
+      "src/tmux_host/adapters/registry.py",
+      "src/tmux_host/adapters/shell.py",
+      "src/tmux_host/adapters/codex.py",
+      "src/tmux_host/adapters/claude.py",
+      "src/tmux_host/adapters/copilot.py",
+      "src/tmux_host/adapters/gemini.py",
+      "tests/unit/test_adapters_registry.py",
+      "tests/unit/test_adapters_invocation.py"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step_1",
+      "task": "Document the adapter contract and create the adapter registry/base interfaces for the fixed v1 adapter set.",
+      "requirements": [
+        "Keep the registry explicit; no dynamic plugin discovery.",
+        "Document required args and failure behavior precisely."
+      ],
+      "expected_files": [
+        "docs/reference/adapter-contract.md",
+        "src/tmux_host/adapters/base.py",
+        "src/tmux_host/adapters/registry.py"
+      ],
+      "validation": [
+        "test -f docs/reference/adapter-contract.md",
+        "python -m compileall src/tmux_host/adapters"
+      ]
+    },
+    {
+      "id": "step_2",
+      "task": "Create wrapper modules for shell, codex, claude, copilot, and gemini that accept the common invocation contract and perform minimal preflight.",
+      "requirements": [
+        "Do not depend on interactive shell rc files for correctness.",
+        "Keep richer env sanitization for the dedicated hardening packet later where possible.",
+        "Missing cwd or missing binary must fail precisely."
+      ],
+      "expected_files": [
+        "src/tmux_host/adapters/shell.py",
+        "src/tmux_host/adapters/codex.py",
+        "src/tmux_host/adapters/claude.py",
+        "src/tmux_host/adapters/copilot.py",
+        "src/tmux_host/adapters/gemini.py"
+      ],
+      "validation": [
+        "python -m compileall src/tmux_host/adapters",
+        "test -f src/tmux_host/adapters/gemini.py",
+        "test -f src/tmux_host/adapters/claude.py"
+      ]
+    },
+    {
+      "id": "step_3",
+      "task": "Add narrow registry and invocation tests to prove adapter resolution and argument contract behavior.",
+      "requirements": [
+        "Keep tests targeted to registry lookup and invocation contract behavior.",
+        "Do not test tmux lifecycle in this packet."
+      ],
+      "expected_files": [
+        "tests/unit/test_adapters_registry.py",
+        "tests/unit/test_adapters_invocation.py"
+      ],
+      "validation": [
+        "pytest -q tests/unit/test_adapters_registry.py tests/unit/test_adapters_invocation.py"
+      ],
+      "context_files": [
+        "src/tmux_host/adapters/registry.py",
+        "src/tmux_host/adapters/base.py"
+      ]
+    }
+  ]
+}

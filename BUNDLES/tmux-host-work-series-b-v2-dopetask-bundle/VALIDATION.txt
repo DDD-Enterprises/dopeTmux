@@ -1,0 +1,8 @@
+Authored to the strict TaskPacket schema plus observed tp series executor rules:
+- strict keys only
+- series/commit present
+- root packet uses parent_tp_id = null and depends_on = []
+- non-root packets include parent in depends_on
+- exactly one final packet
+- every step has non-empty validation
+- non-empty commit.allowlist on every packet

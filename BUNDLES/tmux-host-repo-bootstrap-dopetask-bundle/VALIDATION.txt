@@ -1,0 +1,1 @@
+Authored to strict TaskPacket schema plus observed tp series executor rules.

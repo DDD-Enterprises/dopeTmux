@@ -1,0 +1,86 @@
+{
+  "id": "UX-TP-03",
+  "project": "tmux-host",
+  "target": "Build the desktop Session Index and Active Profile Cockpit views using the shared state model and operator component library.",
+  "invariants": [
+    "The UI must remain a derived supervisory surface, not a second source of truth.",
+    "Desktop and mobile must consume the same shared state model.",
+    "Neon accents are structural; state color and explicit text remain primary."
+  ],
+  "depends_on": [
+    "UX-TP-02"
+  ],
+  "series": {
+    "id": "tmux-host-ui-ux-series-v1",
+    "base_branch": "main",
+    "parent_tp_id": "UX-TP-02",
+    "final_packet": false
+  },
+  "commit": {
+    "message": "Build desktop supervisory dashboard",
+    "allowlist": [
+      "docs/ui/component-map.md",
+      "src/tmux_host/state/selectors.py",
+      "src/tmux_host/ui/copy/**",
+      "src/tmux_host/ui/desktop/**",
+      "tests/integration/test_dashboard_*.py",
+      "tests/integration/test_desktop_*.py"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step_1",
+      "task": "Implement the desktop Session Index view with one row per profile, explicit state chips, pane ratios, blocker text, and one primary next action.",
+      "requirements": [
+        "Desktop home must answer what needs action first.",
+        "Do not add mobile layout behavior here."
+      ],
+      "expected_files": [
+        "src/tmux_host/ui/desktop/session_index.py",
+        "src/tmux_host/ui/copy/labels.py",
+        "src/tmux_host/ui/copy/messages.py"
+      ],
+      "validation": [
+        "python -m compileall src/tmux_host/ui/desktop src/tmux_host/ui/copy",
+        "test -f src/tmux_host/ui/desktop/session_index.py"
+      ]
+    },
+    {
+      "id": "step_2",
+      "task": "Implement the desktop Active Profile Cockpit with summary header, blocker panel, recommended action panel, pane list, recent events, and exact command panel.",
+      "requirements": [
+        "Blockers must be visually elevated above event history.",
+        "Every visible action label must map to a real host command or explicit handoff."
+      ],
+      "expected_files": [
+        "src/tmux_host/ui/desktop/profile_cockpit.py",
+        "docs/ui/component-map.md"
+      ],
+      "validation": [
+        "python -m compileall src/tmux_host/ui/desktop",
+        "test -f src/tmux_host/ui/desktop/profile_cockpit.py"
+      ]
+    },
+    {
+      "id": "step_3",
+      "task": "Add integration checks for dashboard state mapping and desktop view behavior.",
+      "requirements": [
+        "Keep validation empirical.",
+        "Do not add wizard or editing flows."
+      ],
+      "expected_files": [
+        "tests/integration/test_dashboard_state_mapping.py",
+        "tests/integration/test_desktop_session_index.py",
+        "tests/integration/test_desktop_profile_cockpit.py"
+      ],
+      "validation": [
+        "pytest -q tests/integration/test_dashboard_state_mapping.py tests/integration/test_desktop_session_index.py tests/integration/test_desktop_profile_cockpit.py"
+      ],
+      "context_files": [
+        "src/tmux_host/state/selectors.py",
+        "src/tmux_host/ui/desktop/session_index.py",
+        "src/tmux_host/ui/desktop/profile_cockpit.py"
+      ]
+    }
+  ]
+}

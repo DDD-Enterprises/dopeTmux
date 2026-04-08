@@ -1,0 +1,97 @@
+{
+  "id": "TP-02",
+  "project": "tmux-host",
+  "target": "Migrate hard-coded workspace assumptions into profile files and finalize the initial integration-profile system.",
+  "invariants": [
+    "Preserve the tmux-host repo structure under src/tmux_host/ and keep subsystem boundaries intact.",
+    "Do not reintroduce Dopemux-specific ownership into host core; Dopemux remains an integration profile.",
+    "Keep desktop, mobile, CLI, and tmux-native surfaces consuming the same derived state model where UI/state files are touched.",
+    "Do not broaden allowlists or mix unrelated cleanup into these packets.",
+    "Workspace shape must come from profile data, not shell branching or hard-coded repo paths in core logic.",
+    "Dopemux support remains an integration profile, not a host-core dependency."
+  ],
+  "depends_on": [
+    "TP-01"
+  ],
+  "series": {
+    "id": "tmux-host-work-series-b-v2",
+    "base_branch": "main",
+    "parent_tp_id": "TP-01",
+    "final_packet": true
+  },
+  "commit": {
+    "message": "Migrate workspaces into profile-driven integration system",
+    "allowlist": [
+      "docs/reference/integration-profiles.md",
+      "profiles/dopemux-dev.example.toml",
+      "profiles/crm-dev.example.toml",
+      "profiles/generic-repo.example.toml",
+      "src/tmux_host/profiles/loader.py",
+      "src/tmux_host/profiles/models.py",
+      "src/tmux_host/profiles/normalization.py",
+      "tests/integration/test_profile_driven_workspace.py",
+      "tests/integration/test_dopemux_integration_profile.py"
+    ],
+    "verify": [
+      "pytest -q tests/integration/test_profile_driven_workspace.py tests/integration/test_dopemux_integration_profile.py"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step_1",
+      "task": "Document the integration-profile model and add example workspace profiles for Dopemux, CRM, and a generic repo.",
+      "requirements": [
+        "Document Dopemux as an integration profile only.",
+        "Keep profile examples aligned to the strict schema from Series A."
+      ],
+      "expected_files": [
+        "docs/reference/integration-profiles.md",
+        "profiles/dopemux-dev.example.toml",
+        "profiles/crm-dev.example.toml",
+        "profiles/generic-repo.example.toml"
+      ],
+      "validation": [
+        "test -f docs/reference/integration-profiles.md",
+        "test -f profiles/crm-dev.example.toml",
+        "test -f profiles/generic-repo.example.toml"
+      ]
+    },
+    {
+      "id": "step_2",
+      "task": "Wire profile loading and normalization so workspace composition is profile-driven rather than hard-coded in runtime logic.",
+      "requirements": [
+        "Do not add profile inheritance or dynamic magic.",
+        "Keep workspace composition deterministic and explicit."
+      ],
+      "expected_files": [
+        "src/tmux_host/profiles/loader.py",
+        "src/tmux_host/profiles/models.py",
+        "src/tmux_host/profiles/normalization.py"
+      ],
+      "validation": [
+        "python -m compileall src/tmux_host/profiles",
+        "test -f src/tmux_host/profiles/normalization.py"
+      ]
+    },
+    {
+      "id": "step_3",
+      "task": "Add integration tests that prove workspace materialization can be driven by profile examples, including the Dopemux integration profile.",
+      "requirements": [
+        "Keep tests focused on profile-driven workspace behavior.",
+        "Do not make the host core depend on Dopemux internals."
+      ],
+      "expected_files": [
+        "tests/integration/test_profile_driven_workspace.py",
+        "tests/integration/test_dopemux_integration_profile.py"
+      ],
+      "validation": [
+        "pytest -q tests/integration/test_profile_driven_workspace.py tests/integration/test_dopemux_integration_profile.py"
+      ],
+      "context_files": [
+        "profiles/dopemux-dev.example.toml",
+        "src/tmux_host/profiles/loader.py",
+        "src/tmux_host/profiles/normalization.py"
+      ]
+    }
+  ]
+}

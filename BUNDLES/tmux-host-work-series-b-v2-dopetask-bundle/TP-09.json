@@ -1,0 +1,100 @@
+{
+  "id": "TP-09",
+  "project": "tmux-host",
+  "target": "Implement live session verification and degraded-state detection from tmux inspection and shared state mapping.",
+  "invariants": [
+    "Preserve the tmux-host repo structure under src/tmux_host/ and keep subsystem boundaries intact.",
+    "Do not reintroduce Dopemux-specific ownership into host core; Dopemux remains an integration profile.",
+    "Keep desktop, mobile, CLI, and tmux-native surfaces consuming the same derived state model where UI/state files are touched.",
+    "Do not broaden allowlists or mix unrelated cleanup into these packets.",
+    "State remains bounded to ready, degraded, missing, and unknown with attached as an overlay.",
+    "Verification must be derived from live tmux inspection and metadata, not stale marker files."
+  ],
+  "depends_on": [
+    "TP-18"
+  ],
+  "series": {
+    "id": "tmux-host-work-series-b-v2",
+    "base_branch": "main",
+    "parent_tp_id": "TP-18",
+    "final_packet": false
+  },
+  "commit": {
+    "message": "Implement live session verification and degraded-state detection",
+    "allowlist": [
+      "docs/reference/status-model.md",
+      "src/tmux_host/core/session_service.py",
+      "src/tmux_host/diagnostics/doctor.py",
+      "src/tmux_host/state/events.py",
+      "src/tmux_host/state/mapper.py",
+      "src/tmux_host/state/models.py",
+      "tests/integration/test_dashboard_state_mapping.py",
+      "tests/integration/test_session_verification.py",
+      "tests/integration/test_status_model.py"
+    ],
+    "verify": [
+      "pytest -q tests/integration/test_session_verification.py tests/integration/test_status_model.py tests/integration/test_dashboard_state_mapping.py"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step_1",
+      "task": "Document the status model and implement verification primitives that classify missing, ready, degraded, and unknown states from live session inspection.",
+      "requirements": [
+        "Keep status names exact and shared across CLI, tmux, desktop, and mobile.",
+        "Do not add synthetic aggregate health scores.",
+        "Use metadata and pane materialization facts as primary inputs."
+      ],
+      "expected_files": [
+        "docs/reference/status-model.md",
+        "src/tmux_host/state/models.py",
+        "src/tmux_host/state/mapper.py",
+        "src/tmux_host/core/session_service.py"
+      ],
+      "validation": [
+        "test -f docs/reference/status-model.md",
+        "python -m compileall src/tmux_host/core src/tmux_host/state",
+        "grep -n \"degraded\\|unknown\\|missing\\|ready\" src/tmux_host/state/models.py"
+      ]
+    },
+    {
+      "id": "step_2",
+      "task": "Implement degraded-state detection and recent event/state mapping so failures become visible to diagnostics and UI consumers.",
+      "requirements": [
+        "Keep event severities bounded to info, warning, error, and success.",
+        "Do not implement recovery actions in this packet.",
+        "Doctor output must remain procedural and exact."
+      ],
+      "expected_files": [
+        "src/tmux_host/diagnostics/doctor.py",
+        "src/tmux_host/state/events.py",
+        "src/tmux_host/state/mapper.py"
+      ],
+      "validation": [
+        "python -m compileall src/tmux_host/diagnostics src/tmux_host/state",
+        "test -f src/tmux_host/diagnostics/doctor.py"
+      ]
+    },
+    {
+      "id": "step_3",
+      "task": "Add integration tests that prove session verification and status mapping work for ready, degraded, missing, and unknown cases.",
+      "requirements": [
+        "Use exact case fixtures for each status.",
+        "Ensure dashboard-facing mapping consumes the same status outputs."
+      ],
+      "expected_files": [
+        "tests/integration/test_session_verification.py",
+        "tests/integration/test_status_model.py",
+        "tests/integration/test_dashboard_state_mapping.py"
+      ],
+      "validation": [
+        "pytest -q tests/integration/test_session_verification.py tests/integration/test_status_model.py tests/integration/test_dashboard_state_mapping.py"
+      ],
+      "context_files": [
+        "src/tmux_host/core/session_service.py",
+        "src/tmux_host/state/mapper.py",
+        "src/tmux_host/diagnostics/doctor.py"
+      ]
+    }
+  ]
+}

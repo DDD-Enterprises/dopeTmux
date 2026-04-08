@@ -1,0 +1,85 @@
+{
+  "id": "UX-TP-01",
+  "project": "tmux-host",
+  "target": "Implement the shared UI state contract and view model used by CLI, tmux-native UX, desktop dashboard, and mobile dashboard.",
+  "invariants": [
+    "The UI must remain a derived supervisory surface, not a second source of truth.",
+    "Desktop and mobile must consume the same shared state model.",
+    "Neon accents are structural; state color and explicit text remain primary."
+  ],
+  "depends_on": [],
+  "series": {
+    "id": "tmux-host-ui-ux-series-v1",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "commit": {
+    "message": "Implement shared UI state contract",
+    "allowlist": [
+      "docs/ui/state-model.md",
+      "src/tmux_host/state/**",
+      "tests/fixtures/ui_state/**",
+      "tests/unit/test_state_*.py"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step_1",
+      "task": "Define the shared UI state models, pane states, overlays, action result states, and recent event structures under src/tmux_host/state/.",
+      "requirements": [
+        "Keep canonical profile states bounded to ready, degraded, missing, and unknown.",
+        "Keep overlays bounded to attached and blocked.",
+        "Do not invent dashboard-only state aliases."
+      ],
+      "expected_files": [
+        "src/tmux_host/state/models.py",
+        "src/tmux_host/state/events.py"
+      ],
+      "validation": [
+        "python -m compileall src/tmux_host/state",
+        "grep -n \"ready\" src/tmux_host/state/models.py",
+        "grep -n \"degraded\" src/tmux_host/state/models.py"
+      ]
+    },
+    {
+      "id": "step_2",
+      "task": "Implement the state mapper and selectors that convert runtime-facing host data into the shared UI state shape without inventing a second truth model.",
+      "requirements": [
+        "Keep UI mapping derived from observable host/runtime state only.",
+        "Do not add visual rendering logic in this packet."
+      ],
+      "expected_files": [
+        "src/tmux_host/state/mapper.py",
+        "src/tmux_host/state/selectors.py",
+        "src/tmux_host/state/fixtures.py"
+      ],
+      "validation": [
+        "python -m compileall src/tmux_host/state",
+        "test -f src/tmux_host/state/selectors.py"
+      ]
+    },
+    {
+      "id": "step_3",
+      "task": "Add canonical fixtures and unit tests for ready, degraded, missing, unknown, and blocked overlay cases.",
+      "requirements": [
+        "Use explicit fixtures for anti-drift validation.",
+        "Desktop and mobile must be able to consume the same payload shape."
+      ],
+      "expected_files": [
+        "tests/fixtures/ui_state/",
+        "tests/unit/test_state_models.py",
+        "tests/unit/test_state_mapper.py",
+        "docs/ui/state-model.md"
+      ],
+      "validation": [
+        "pytest -q tests/unit/test_state_models.py tests/unit/test_state_mapper.py",
+        "test -f docs/ui/state-model.md"
+      ],
+      "context_files": [
+        "src/tmux_host/state/models.py",
+        "src/tmux_host/state/mapper.py"
+      ]
+    }
+  ]
+}

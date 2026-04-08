@@ -1,0 +1,85 @@
+{
+  "id": "TP-12",
+  "project": "tmux-host",
+  "target": "Define and harden the shell boundary so tmux-host correctness no longer depends on interactive shell startup behavior.",
+  "invariants": [
+    "Keep tmux-host as an external host runtime; do not bake Dopemux-specific ownership into host core.",
+    "Preserve the source-first repo structure under src/tmux_host/ and the UI docs under docs/ui/.",
+    "Do not add broad allowlists or unrelated cleanup.",
+    ".zshenv must remain minimal and universal.",
+    ".zshrc must be interactive-only and not required for host correctness."
+  ],
+  "depends_on": [
+    "TP-13"
+  ],
+  "series": {
+    "id": "tmux-host-work-series-a-v3",
+    "base_branch": "main",
+    "parent_tp_id": "TP-13",
+    "final_packet": false
+  },
+  "commit": {
+    "message": "Define tmux-host shell boundary",
+    "allowlist": [
+      "docs/how-to/shell-boundary.md",
+      "src/tmux_host/bootstrap/ensure_entry.py",
+      "src/tmux_host/bootstrap/ssh_entry.py",
+      "tests/unit/test_shell_boundary_docs.py"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step_1",
+      "task": "Document the shell boundary for tmux-host, including what belongs in .zshenv, what belongs in .zshrc, and what must stay in host-owned entrypoints.",
+      "requirements": [
+        "Treat shell docs as operator guidance only.",
+        "Do not claim .zshrc is required for correctness.",
+        "Keep the boundary consistent with the explicit env contract."
+      ],
+      "expected_files": [
+        "docs/how-to/shell-boundary.md"
+      ],
+      "validation": [
+        "test -f docs/how-to/shell-boundary.md",
+        "grep -n \"zshenv\" docs/how-to/shell-boundary.md",
+        "grep -n \"zshrc\" docs/how-to/shell-boundary.md"
+      ]
+    },
+    {
+      "id": "step_2",
+      "task": "Add bootstrap entrypoint stubs for ensure and SSH handoff so host-owned startup paths exist outside shell rc ownership.",
+      "requirements": [
+        "Create only bounded entrypoint stubs or thin wrappers here.",
+        "Do not implement lifecycle logic in full.",
+        "Keep bootstrap concerns under src/tmux_host/bootstrap/."
+      ],
+      "expected_files": [
+        "src/tmux_host/bootstrap/ensure_entry.py",
+        "src/tmux_host/bootstrap/ssh_entry.py"
+      ],
+      "validation": [
+        "python -m compileall src/tmux_host/bootstrap",
+        "test -f src/tmux_host/bootstrap/ensure_entry.py",
+        "test -f src/tmux_host/bootstrap/ssh_entry.py"
+      ]
+    },
+    {
+      "id": "step_3",
+      "task": "Add a narrow shell-boundary regression check or doc test so future packets do not quietly move correctness back into shell startup.",
+      "requirements": [
+        "Keep the check narrow and structure-oriented.",
+        "Do not start modifying actual user dotfiles in this packet."
+      ],
+      "expected_files": [
+        "tests/unit/test_shell_boundary_docs.py"
+      ],
+      "validation": [
+        "test -f tests/unit/test_shell_boundary_docs.py",
+        "pytest -q tests/unit/test_shell_boundary_docs.py"
+      ],
+      "context_files": [
+        "docs/how-to/shell-boundary.md"
+      ]
+    }
+  ]
+}

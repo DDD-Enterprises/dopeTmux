@@ -1,0 +1,109 @@
+{
+  "id": "TP-08",
+  "project": "tmux-host",
+  "target": "Implement the ensure-first lifecycle core with deterministic create, up, attach, and down semantics based on validated profiles and the adapter registry.",
+  "invariants": [
+    "Keep tmux-host as an external host runtime; do not bake Dopemux-specific ownership into host core.",
+    "Preserve the source-first repo structure under src/tmux_host/ and the UI docs under docs/ui/.",
+    "Do not add broad allowlists or unrelated cleanup.",
+    "Ensure is idempotent and attach never creates.",
+    "Provisioning order stays stable and profile-driven."
+  ],
+  "depends_on": [
+    "TP-17"
+  ],
+  "series": {
+    "id": "tmux-host-work-series-a-v3",
+    "base_branch": "main",
+    "parent_tp_id": "TP-17",
+    "final_packet": true
+  },
+  "commit": {
+    "message": "Implement lifecycle core for tmux-host",
+    "allowlist": [
+      "docs/reference/lifecycle.md",
+      "src/tmux_host/cli/app.py",
+      "src/tmux_host/cli/commands_lifecycle.py",
+      "src/tmux_host/cli/renderers.py",
+      "src/tmux_host/core/action_service.py",
+      "src/tmux_host/core/lifecycle_service.py",
+      "src/tmux_host/core/session_service.py",
+      "src/tmux_host/tmux/client.py",
+      "src/tmux_host/tmux/layout.py",
+      "src/tmux_host/tmux/metadata.py",
+      "src/tmux_host/tmux/panes.py",
+      "src/tmux_host/tmux/sessions.py",
+      "src/tmux_host/tmux/windows.py",
+      "tests/integration/test_lifecycle_core.py",
+      "tests/integration/test_lifecycle_idempotence.py"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step_1",
+      "task": "Document lifecycle semantics and wire the CLI entrypoints for ensure, up, attach, and down to the lifecycle services.",
+      "requirements": [
+        "Invalid profiles must fail before tmux mutation.",
+        "Attach must never create.",
+        "Keep labels and output procedural and exact."
+      ],
+      "expected_files": [
+        "docs/reference/lifecycle.md",
+        "src/tmux_host/cli/app.py",
+        "src/tmux_host/cli/commands_lifecycle.py",
+        "src/tmux_host/cli/renderers.py"
+      ],
+      "validation": [
+        "test -f docs/reference/lifecycle.md",
+        "python -m compileall src/tmux_host/cli"
+      ]
+    },
+    {
+      "id": "step_2",
+      "task": "Implement lifecycle and session services plus tmux helpers for deterministic detached session creation, window/pane materialization, metadata stamping, and stable layout application.",
+      "requirements": [
+        "Provision windows and panes in declared order.",
+        "Do not implement reset-layout, respawn, or degraded-state expansion beyond what is minimally necessary for lifecycle core.",
+        "Keep host core Dopemux-independent."
+      ],
+      "expected_files": [
+        "src/tmux_host/core/action_service.py",
+        "src/tmux_host/core/lifecycle_service.py",
+        "src/tmux_host/core/session_service.py",
+        "src/tmux_host/tmux/client.py",
+        "src/tmux_host/tmux/layout.py",
+        "src/tmux_host/tmux/metadata.py",
+        "src/tmux_host/tmux/panes.py",
+        "src/tmux_host/tmux/sessions.py",
+        "src/tmux_host/tmux/windows.py"
+      ],
+      "validation": [
+        "python -m compileall src/tmux_host/core src/tmux_host/tmux",
+        "test -f src/tmux_host/core/lifecycle_service.py",
+        "test -f src/tmux_host/tmux/sessions.py",
+        "test -f src/tmux_host/tmux/panes.py"
+      ]
+    },
+    {
+      "id": "step_3",
+      "task": "Add integration tests for create path, attach semantics, and ensure idempotence so lifecycle behavior is empirically verifiable.",
+      "requirements": [
+        "Test repeated ensure behavior explicitly.",
+        "Test attach failure when the session is missing.",
+        "Keep tests scoped to lifecycle core."
+      ],
+      "expected_files": [
+        "tests/integration/test_lifecycle_core.py",
+        "tests/integration/test_lifecycle_idempotence.py"
+      ],
+      "validation": [
+        "pytest -q tests/integration/test_lifecycle_core.py tests/integration/test_lifecycle_idempotence.py"
+      ],
+      "context_files": [
+        "src/tmux_host/core/lifecycle_service.py",
+        "src/tmux_host/tmux/sessions.py",
+        "src/tmux_host/tmux/panes.py"
+      ]
+    }
+  ]
+}

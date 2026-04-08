@@ -1,0 +1,83 @@
+{
+  "id": "UX-TP-05",
+  "project": "tmux-host",
+  "target": "Build the mobile-responsive remote panel and exact-command handoff flow for awareness and bounded control.",
+  "invariants": [
+    "The UI must remain a derived supervisory surface, not a second source of truth.",
+    "Desktop and mobile must consume the same shared state model.",
+    "Neon accents are structural; state color and explicit text remain primary."
+  ],
+  "depends_on": [
+    "UX-TP-04"
+  ],
+  "series": {
+    "id": "tmux-host-ui-ux-series-v1",
+    "base_branch": "main",
+    "parent_tp_id": "UX-TP-04",
+    "final_packet": false
+  },
+  "commit": {
+    "message": "Build mobile-responsive remote panel",
+    "allowlist": [
+      "docs/ui/action-matrix.md",
+      "docs/ui/component-map.md",
+      "src/tmux_host/state/selectors.py",
+      "src/tmux_host/ui/copy/**",
+      "src/tmux_host/ui/mobile/**",
+      "tests/integration/test_mobile_*.py"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step_1",
+      "task": "Implement the mobile home card layout with profile name, explicit state chip, pane ratio, blocker line, and one dominant safe action.",
+      "requirements": [
+        "No tables or horizontal-scroll fallback.",
+        "Mobile home must answer whether the profile is healthy and what the one safe action is."
+      ],
+      "expected_files": [
+        "src/tmux_host/ui/mobile/profile_cards.py"
+      ],
+      "validation": [
+        "python -m compileall src/tmux_host/ui/mobile",
+        "test -f src/tmux_host/ui/mobile/profile_cards.py"
+      ]
+    },
+    {
+      "id": "step_2",
+      "task": "Implement the mobile profile detail screen with summary block, blocker panel, pane cards, action block, exact command panel, and collapsed recent events.",
+      "requirements": [
+        "Keep mobile bounded to awareness and safe control.",
+        "Do not expose editing or configuration flows."
+      ],
+      "expected_files": [
+        "src/tmux_host/ui/mobile/profile_remote_panel.py",
+        "docs/ui/action-matrix.md",
+        "docs/ui/component-map.md"
+      ],
+      "validation": [
+        "python -m compileall src/tmux_host/ui/mobile",
+        "test -f src/tmux_host/ui/mobile/profile_remote_panel.py"
+      ]
+    },
+    {
+      "id": "step_3",
+      "task": "Add integration checks for mobile rendering and action handoff behavior, including exact command fallback.",
+      "requirements": [
+        "Mobile must always have an exact command fallback when direct action is unsafe or unavailable."
+      ],
+      "expected_files": [
+        "tests/integration/test_mobile_render_contract.py",
+        "tests/integration/test_mobile_action_handoff.py"
+      ],
+      "validation": [
+        "pytest -q tests/integration/test_mobile_render_contract.py tests/integration/test_mobile_action_handoff.py"
+      ],
+      "context_files": [
+        "src/tmux_host/ui/mobile/profile_cards.py",
+        "src/tmux_host/ui/mobile/profile_remote_panel.py",
+        "docs/ui/action-matrix.md"
+      ]
+    }
+  ]
+}

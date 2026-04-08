@@ -1,0 +1,93 @@
+{
+  "id": "TP-13",
+  "project": "tmux-host",
+  "target": "Move secret ownership out of shell startup and establish an explicit env contract for tmux-host profiles and adapters.",
+  "invariants": [
+    "Keep tmux-host as an external host runtime; do not bake Dopemux-specific ownership into host core.",
+    "Preserve the source-first repo structure under src/tmux_host/ and the UI docs under docs/ui/.",
+    "Do not add broad allowlists or unrelated cleanup.",
+    "Secrets must not live in .zshenv or .zshrc.",
+    "Required environment validation must fail closed with exact variable names."
+  ],
+  "depends_on": [
+    "RS-TP-00"
+  ],
+  "series": {
+    "id": "tmux-host-work-series-a-v3",
+    "base_branch": "main",
+    "parent_tp_id": "RS-TP-00",
+    "final_packet": false
+  },
+  "commit": {
+    "message": "Define explicit env contract for tmux-host",
+    "allowlist": [
+      "docs/reference/env-contract.md",
+      "ops/examples/sample.env",
+      "src/tmux_host/adapters/env_merge.py",
+      "src/tmux_host/diagnostics/checks_env.py",
+      "src/tmux_host/profiles/models.py",
+      "src/tmux_host/profiles/validator.py",
+      "tests/unit/test_env_contract.py"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step_1",
+      "task": "Document the explicit env source model for tmux-host, including env_file, required_env, optional_env, and fail-closed behavior.",
+      "requirements": [
+        "Do not describe shell startup files as secret authority.",
+        "Keep operator guidance procedural and exact.",
+        "Use the repo structure created by RS-TP-00."
+      ],
+      "expected_files": [
+        "docs/reference/env-contract.md",
+        "ops/examples/sample.env"
+      ],
+      "validation": [
+        "test -f docs/reference/env-contract.md",
+        "grep -n \"required_env\" docs/reference/env-contract.md",
+        "test -f ops/examples/sample.env"
+      ]
+    },
+    {
+      "id": "step_2",
+      "task": "Add env contract models and validation helpers so profiles can declare env_file, required_env, and optional_env without relying on ambient shell state.",
+      "requirements": [
+        "Keep the contract bounded to explicit env declarations.",
+        "Do not implement adapter execution here beyond helper interfaces if required.",
+        "Missing required env must be reported explicitly."
+      ],
+      "expected_files": [
+        "src/tmux_host/adapters/env_merge.py",
+        "src/tmux_host/diagnostics/checks_env.py",
+        "src/tmux_host/profiles/models.py",
+        "src/tmux_host/profiles/validator.py"
+      ],
+      "validation": [
+        "python -m compileall src/tmux_host/adapters src/tmux_host/diagnostics src/tmux_host/profiles",
+        "test -f src/tmux_host/adapters/env_merge.py",
+        "test -f src/tmux_host/diagnostics/checks_env.py"
+      ]
+    },
+    {
+      "id": "step_3",
+      "task": "Add narrow tests for present and missing required environment cases so env validation is falsifiable.",
+      "requirements": [
+        "Test exact missing variable reporting.",
+        "Avoid testing unrelated shell behavior here."
+      ],
+      "expected_files": [
+        "tests/unit/test_env_contract.py"
+      ],
+      "validation": [
+        "test -f tests/unit/test_env_contract.py",
+        "pytest -q tests/unit/test_env_contract.py"
+      ],
+      "context_files": [
+        "src/tmux_host/adapters/env_merge.py",
+        "src/tmux_host/diagnostics/checks_env.py",
+        "src/tmux_host/profiles/validator.py"
+      ]
+    }
+  ]
+}

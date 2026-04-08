@@ -1,0 +1,82 @@
+{
+  "id": "UX-TP-04",
+  "project": "tmux-host",
+  "target": "Implement tmux-native operator UX with compact status/header surfaces, degraded indicators, helper affordances, and useful dead-pane failure cards.",
+  "invariants": [
+    "The UI must remain a derived supervisory surface, not a second source of truth.",
+    "Desktop and mobile must consume the same shared state model.",
+    "Neon accents are structural; state color and explicit text remain primary."
+  ],
+  "depends_on": [
+    "UX-TP-03"
+  ],
+  "series": {
+    "id": "tmux-host-ui-ux-series-v1",
+    "base_branch": "main",
+    "parent_tp_id": "UX-TP-03",
+    "final_packet": false
+  },
+  "commit": {
+    "message": "Improve tmux-native operator UX",
+    "allowlist": [
+      "docs/ui/component-map.md",
+      "src/tmux_host/cli/renderers.py",
+      "src/tmux_host/state/models.py",
+      "src/tmux_host/tmux/bindings.py",
+      "src/tmux_host/tmux/failure_cards.py",
+      "src/tmux_host/tmux/metadata.py",
+      "tests/integration/test_tmux_*.py"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step_1",
+      "task": "Implement the tmux-native header/statusline content model so profile state, active role, and degraded indicators are compact and explicit.",
+      "requirements": [
+        "Do not overload the statusline with decorative clutter.",
+        "Use explicit textual state in addition to color."
+      ],
+      "expected_files": [
+        "src/tmux_host/tmux/metadata.py",
+        "src/tmux_host/cli/renderers.py"
+      ],
+      "validation": [
+        "python -m compileall src/tmux_host/tmux src/tmux_host/cli"
+      ]
+    },
+    {
+      "id": "step_2",
+      "task": "Implement dead-pane failure card rendering and tmux helper affordances for focus, respawn, reset-layout, and status/help overlay content.",
+      "requirements": [
+        "A failed pane must not remain silent blank space.",
+        "Failure cards must show failed surface, next action, and exact command."
+      ],
+      "expected_files": [
+        "src/tmux_host/tmux/bindings.py",
+        "src/tmux_host/tmux/failure_cards.py"
+      ],
+      "validation": [
+        "python -m compileall src/tmux_host/tmux",
+        "test -f src/tmux_host/tmux/failure_cards.py"
+      ]
+    },
+    {
+      "id": "step_3",
+      "task": "Add integration checks for tmux-native metadata and failure-card behavior.",
+      "requirements": [
+        "Keep tests focused on tmux UX behavior rather than dashboard screens."
+      ],
+      "expected_files": [
+        "tests/integration/test_tmux_metadata.py",
+        "tests/integration/test_tmux_failure_cards.py"
+      ],
+      "validation": [
+        "pytest -q tests/integration/test_tmux_metadata.py tests/integration/test_tmux_failure_cards.py"
+      ],
+      "context_files": [
+        "src/tmux_host/tmux/metadata.py",
+        "src/tmux_host/tmux/failure_cards.py"
+      ]
+    }
+  ]
+}

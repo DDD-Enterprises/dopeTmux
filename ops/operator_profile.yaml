@@ -1,0 +1,11 @@
+dopetask:
+  cli_min_version: 0.5.1
+  pin_type: git_commit
+  pin_value: UNKNOWN
+platform:
+  model: gpt-5.2-thinking
+  target: chatgpt
+project:
+  name: dopeTmux
+  repo_root: /Users/hue/code/dopeTmux
+  timezone: America/Vancouver

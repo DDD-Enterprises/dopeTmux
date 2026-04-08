@@ -1,0 +1,95 @@
+{
+  "id": "TP-01",
+  "project": "tmux-host",
+  "target": "Extract the reusable host core from the bespoke launcher assumptions and align runtime paths to the new package boundaries.",
+  "invariants": [
+    "Preserve the tmux-host repo structure under src/tmux_host/ and keep subsystem boundaries intact.",
+    "Do not reintroduce Dopemux-specific ownership into host core; Dopemux remains an integration profile.",
+    "Keep desktop, mobile, CLI, and tmux-native surfaces consuming the same derived state model where UI/state files are touched.",
+    "Do not broaden allowlists or mix unrelated cleanup into these packets.",
+    "Host core remains generic and profile-driven.",
+    "Do not let hard-coded Dopemux or CRM layout assumptions survive in core services."
+  ],
+  "depends_on": [
+    "TP-10"
+  ],
+  "series": {
+    "id": "tmux-host-work-series-b-v2",
+    "base_branch": "main",
+    "parent_tp_id": "TP-10",
+    "final_packet": false
+  },
+  "commit": {
+    "message": "Extract reusable host core from bespoke launcher logic",
+    "allowlist": [
+      "docs/architecture/host-core.md",
+      "src/tmux_host/cli/app.py",
+      "src/tmux_host/core/**",
+      "src/tmux_host/shared/paths.py",
+      "tests/integration/test_host_core_extraction.py",
+      "tests/unit/test_cli_renderers.py"
+    ],
+    "verify": [
+      "pytest -q tests/integration/test_host_core_extraction.py tests/unit/test_cli_renderers.py"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step_1",
+      "task": "Document the host core boundary and identify the package seams where launcher behavior now belongs.",
+      "requirements": [
+        "Keep architecture docs aligned to the external-host boundary.",
+        "Do not move Dopemux-specific behavior into core."
+      ],
+      "expected_files": [
+        "docs/architecture/host-core.md",
+        "src/tmux_host/core/lifecycle_service.py",
+        "src/tmux_host/core/session_service.py"
+      ],
+      "validation": [
+        "test -f docs/architecture/host-core.md",
+        "python -m compileall src/tmux_host/core"
+      ]
+    },
+    {
+      "id": "step_2",
+      "task": "Refactor CLI/core/shared paths so reusable host behavior is cleanly separated from one-off launcher assumptions.",
+      "requirements": [
+        "Keep command behavior deterministic.",
+        "Do not sneak profile data or adapter specifics into generic shared helpers.",
+        "Avoid broad path churn."
+      ],
+      "expected_files": [
+        "src/tmux_host/cli/app.py",
+        "src/tmux_host/core/action_service.py",
+        "src/tmux_host/core/lifecycle_service.py",
+        "src/tmux_host/core/session_service.py",
+        "src/tmux_host/shared/paths.py"
+      ],
+      "validation": [
+        "python -m compileall src/tmux_host/cli src/tmux_host/core src/tmux_host/shared",
+        "test -f src/tmux_host/shared/paths.py"
+      ]
+    },
+    {
+      "id": "step_3",
+      "task": "Add focused tests that prove the extracted host core no longer depends on bespoke launcher assumptions.",
+      "requirements": [
+        "Keep tests targeted to package seams and generic behavior.",
+        "Do not test profile-specific migration here."
+      ],
+      "expected_files": [
+        "tests/integration/test_host_core_extraction.py",
+        "tests/unit/test_cli_renderers.py"
+      ],
+      "validation": [
+        "pytest -q tests/integration/test_host_core_extraction.py tests/unit/test_cli_renderers.py"
+      ],
+      "context_files": [
+        "src/tmux_host/core/lifecycle_service.py",
+        "src/tmux_host/cli/app.py",
+        "src/tmux_host/shared/paths.py"
+      ]
+    }
+  ]
+}

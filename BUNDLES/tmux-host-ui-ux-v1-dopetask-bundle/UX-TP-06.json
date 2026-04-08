@@ -1,0 +1,87 @@
+{
+  "id": "UX-TP-06",
+  "project": "tmux-host",
+  "target": "Audit the implemented UX against the v1 gates, harden copy, and verify action truthfulness across CLI, tmux, desktop, and mobile surfaces.",
+  "invariants": [
+    "The UI must remain a derived supervisory surface, not a second source of truth.",
+    "Desktop and mobile must consume the same shared state model.",
+    "Neon accents are structural; state color and explicit text remain primary."
+  ],
+  "depends_on": [
+    "UX-TP-05"
+  ],
+  "series": {
+    "id": "tmux-host-ui-ux-series-v1",
+    "base_branch": "main",
+    "parent_tp_id": "UX-TP-05",
+    "final_packet": true
+  },
+  "commit": {
+    "message": "Audit UX copy and v1 gates",
+    "allowlist": [
+      "docs/ui/action-matrix.md",
+      "docs/ui/component-map.md",
+      "docs/ui/v1-cut-line.md",
+      "src/tmux_host/cli/renderers.py",
+      "src/tmux_host/ui/copy/**",
+      "tests/integration/test_action_label_truth.py",
+      "tests/integration/test_dashboard_state_mapping.py",
+      "tests/integration/test_mobile_render_contract.py"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step_1",
+      "task": "Audit and refine UI and CLI copy so labels remain procedural, stable, and truthful across all surfaces.",
+      "requirements": [
+        "Allowed action labels remain Ensure, Attach, Respawn, Reset Layout, Doctor, and Down.",
+        "Do not introduce vague labels such as Fix, Heal, Boost, or Optimize."
+      ],
+      "expected_files": [
+        "src/tmux_host/ui/copy/labels.py",
+        "src/tmux_host/ui/copy/messages.py",
+        "src/tmux_host/cli/renderers.py"
+      ],
+      "validation": [
+        "python -m compileall src/tmux_host/ui/copy src/tmux_host/cli",
+        "grep -R \"Ensure\\|Attach\\|Respawn\\|Reset Layout\\|Doctor\\|Down\" src/tmux_host/ui/copy src/tmux_host/cli/renderers.py"
+      ]
+    },
+    {
+      "id": "step_2",
+      "task": "Run the v1 UX gate audit against the action matrix, component map, and v1 cut line so unsupported or drifted behaviors are caught.",
+      "requirements": [
+        "Do not add new product features in this packet.",
+        "Keep the audit tied to the approved v1 cut line."
+      ],
+      "expected_files": [
+        "docs/ui/action-matrix.md",
+        "docs/ui/component-map.md",
+        "docs/ui/v1-cut-line.md"
+      ],
+      "validation": [
+        "test -f docs/ui/v1-cut-line.md",
+        "test -f docs/ui/action-matrix.md",
+        "test -f docs/ui/component-map.md"
+      ]
+    },
+    {
+      "id": "step_3",
+      "task": "Add or run final integration checks for action label truthfulness and shared-state rendering across dashboard and mobile surfaces.",
+      "requirements": [
+        "Keep the audit empirical and falsifiable."
+      ],
+      "expected_files": [
+        "tests/integration/test_action_label_truth.py"
+      ],
+      "validation": [
+        "pytest -q tests/integration/test_action_label_truth.py tests/integration/test_dashboard_state_mapping.py tests/integration/test_mobile_render_contract.py"
+      ],
+      "context_files": [
+        "docs/ui/v1-cut-line.md",
+        "docs/ui/action-matrix.md",
+        "src/tmux_host/ui/copy/labels.py"
+      ]
+    }
+  ]
+}

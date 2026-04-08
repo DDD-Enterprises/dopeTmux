@@ -1,0 +1,98 @@
+{
+  "id": "TP-16",
+  "project": "tmux-host",
+  "target": "Implement strict TOML profile parsing and validation with unknown-field rejection and bounded v1 schema support.",
+  "invariants": [
+    "Keep tmux-host as an external host runtime; do not bake Dopemux-specific ownership into host core.",
+    "Preserve the source-first repo structure under src/tmux_host/ and the UI docs under docs/ui/.",
+    "Do not add broad allowlists or unrelated cleanup.",
+    "Profiles remain declarative data only.",
+    "Unknown fields must fail validation."
+  ],
+  "depends_on": [
+    "TP-12"
+  ],
+  "series": {
+    "id": "tmux-host-work-series-a-v3",
+    "base_branch": "main",
+    "parent_tp_id": "TP-12",
+    "final_packet": false
+  },
+  "commit": {
+    "message": "Implement strict profile schema validation",
+    "allowlist": [
+      "docs/reference/profile-schema.md",
+      "profiles/dopemux-dev.example.toml",
+      "profiles/generic-repo.example.toml",
+      "src/tmux_host/profiles/loader.py",
+      "src/tmux_host/profiles/models.py",
+      "src/tmux_host/profiles/normalization.py",
+      "src/tmux_host/profiles/schema.py",
+      "src/tmux_host/profiles/validator.py",
+      "tests/unit/test_profiles_schema.py",
+      "tests/fixtures/profiles/**"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step_1",
+      "task": "Define the v1 profile schema, profile examples, and profile model structures under src/tmux_host/profiles/ and docs/reference/.",
+      "requirements": [
+        "Keep pane cwd explicit in v1.",
+        "Do not add hooks, inheritance, or shell evaluation.",
+        "Document only the accepted fields and enums."
+      ],
+      "expected_files": [
+        "docs/reference/profile-schema.md",
+        "profiles/dopemux-dev.example.toml",
+        "profiles/generic-repo.example.toml",
+        "src/tmux_host/profiles/models.py",
+        "src/tmux_host/profiles/schema.py"
+      ],
+      "validation": [
+        "test -f docs/reference/profile-schema.md",
+        "test -f profiles/dopemux-dev.example.toml",
+        "python -m compileall src/tmux_host/profiles"
+      ]
+    },
+    {
+      "id": "step_2",
+      "task": "Implement strict parsing, normalization, and validation so required fields, enums, duplicate pane ids, and unknown fields are checked before tmux mutation.",
+      "requirements": [
+        "Unknown fields must fail validation.",
+        "Keep validation split into parse and runtime stages where practical.",
+        "Do not implement tmux lifecycle here."
+      ],
+      "expected_files": [
+        "src/tmux_host/profiles/loader.py",
+        "src/tmux_host/profiles/normalization.py",
+        "src/tmux_host/profiles/validator.py"
+      ],
+      "validation": [
+        "python -m compileall src/tmux_host/profiles",
+        "test -f src/tmux_host/profiles/loader.py",
+        "test -f src/tmux_host/profiles/validator.py"
+      ]
+    },
+    {
+      "id": "step_3",
+      "task": "Add fixtures and tests for valid profiles, bad enums, unknown fields, and duplicate pane ids.",
+      "requirements": [
+        "Use exact negative cases rather than vague smoke tests.",
+        "Keep tests scoped to profile parsing and validation."
+      ],
+      "expected_files": [
+        "tests/unit/test_profiles_schema.py",
+        "tests/fixtures/profiles/"
+      ],
+      "validation": [
+        "pytest -q tests/unit/test_profiles_schema.py"
+      ],
+      "context_files": [
+        "src/tmux_host/profiles/loader.py",
+        "src/tmux_host/profiles/validator.py",
+        "profiles/dopemux-dev.example.toml"
+      ]
+    }
+  ]
+}

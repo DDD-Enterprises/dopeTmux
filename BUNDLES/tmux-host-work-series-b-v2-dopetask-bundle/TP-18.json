@@ -1,0 +1,96 @@
+{
+  "id": "TP-18",
+  "project": "tmux-host",
+  "target": "Implement canonical pane metadata stamping and live drift verification primitives so later status, recovery, and profile migration work can identify panes deterministically.",
+  "invariants": [
+    "Preserve the tmux-host repo structure under src/tmux_host/ and keep subsystem boundaries intact.",
+    "Do not reintroduce Dopemux-specific ownership into host core; Dopemux remains an integration profile.",
+    "Keep desktop, mobile, CLI, and tmux-native surfaces consuming the same derived state model where UI/state files are touched.",
+    "Do not broaden allowlists or mix unrelated cleanup into these packets.",
+    "Pane identity must be derived from explicit metadata, not guessed from screen position.",
+    "Metadata must be sufficient to support lookup, respawn, drift detection, and focus helpers."
+  ],
+  "depends_on": [],
+  "series": {
+    "id": "tmux-host-work-series-b-v2",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": false
+  },
+  "commit": {
+    "message": "Implement pane metadata and drift verification",
+    "allowlist": [
+      "docs/reference/pane-metadata.md",
+      "src/tmux_host/state/models.py",
+      "src/tmux_host/tmux/metadata.py",
+      "src/tmux_host/tmux/panes.py",
+      "src/tmux_host/tmux/sessions.py",
+      "tests/integration/test_tmux_metadata.py",
+      "tests/integration/test_tmux_drift_verification.py",
+      "tests/fixtures/tmux/**"
+    ],
+    "verify": [
+      "pytest -q tests/integration/test_tmux_metadata.py tests/integration/test_tmux_drift_verification.py"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step_1",
+      "task": "Document the canonical pane metadata keys and add explicit metadata structures in the state and tmux layers.",
+      "requirements": [
+        "Use explicit metadata keys for profile id, window id, pane id, adapter, role, cwd, respawn, and command override.",
+        "Do not invent dashboard-only metadata.",
+        "Keep the documentation and code names aligned exactly."
+      ],
+      "expected_files": [
+        "docs/reference/pane-metadata.md",
+        "src/tmux_host/state/models.py",
+        "src/tmux_host/tmux/metadata.py"
+      ],
+      "validation": [
+        "test -f docs/reference/pane-metadata.md",
+        "python -m compileall src/tmux_host/state src/tmux_host/tmux",
+        "grep -n \"host_profile_id\\|host_pane_id\\|host_adapter\" src/tmux_host/tmux/metadata.py"
+      ]
+    },
+    {
+      "id": "step_2",
+      "task": "Implement metadata stamping and lookup helpers so panes can be identified and queried deterministically after materialization.",
+      "requirements": [
+        "Do not infer pane identity from layout position.",
+        "Keep lookup helpers narrow and metadata-driven.",
+        "Avoid recovery logic beyond what metadata stamping requires."
+      ],
+      "expected_files": [
+        "src/tmux_host/tmux/metadata.py",
+        "src/tmux_host/tmux/panes.py",
+        "src/tmux_host/tmux/sessions.py"
+      ],
+      "validation": [
+        "python -m compileall src/tmux_host/tmux",
+        "test -f src/tmux_host/tmux/metadata.py",
+        "test -f src/tmux_host/tmux/panes.py"
+      ]
+    },
+    {
+      "id": "step_3",
+      "task": "Add drift verification tests and tmux fixtures that prove missing metadata and metadata mismatch are observable.",
+      "requirements": [
+        "Keep tests targeted to metadata presence and drift detection.",
+        "Do not implement degraded-state policy here beyond test fixtures."
+      ],
+      "expected_files": [
+        "tests/integration/test_tmux_metadata.py",
+        "tests/integration/test_tmux_drift_verification.py",
+        "tests/fixtures/tmux/"
+      ],
+      "validation": [
+        "pytest -q tests/integration/test_tmux_metadata.py tests/integration/test_tmux_drift_verification.py"
+      ],
+      "context_files": [
+        "src/tmux_host/tmux/metadata.py",
+        "src/tmux_host/tmux/panes.py"
+      ]
+    }
+  ]
+}

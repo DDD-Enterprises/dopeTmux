@@ -1,0 +1,125 @@
+{
+  "id": "RS-TP-00",
+  "project": "tmux-host",
+  "target": "Create the initial tmux-host repository structure, package skeleton, docs/ui scaffold, and test scaffold so later packets can target stable paths with narrow allowlists.",
+  "invariants": [
+    "Create structure and placeholder modules only; do not implement host lifecycle, adapter execution, tmux behavior, or dashboard features.",
+    "Keep the repo aligned to the source-first layout under src/tmux_host/ with separate boundaries for cli, core, profiles, adapters, tmux, state, ui, bootstrap, diagnostics, and shared.",
+    "Do not invent secondary roots for UI or runtime code outside the approved repo structure."
+  ],
+  "depends_on": [],
+  "series": {
+    "id": "tmux-host-repo-bootstrap-v1",
+    "base_branch": "main",
+    "parent_tp_id": null,
+    "final_packet": true
+  },
+  "commit": {
+    "message": "Bootstrap tmux-host repo structure",
+    "allowlist": [
+      "README.md",
+      "docs/ui/**",
+      "ops/**",
+      "profiles/**",
+      "proof/**",
+      "pyproject.toml",
+      "src/tmux_host/**",
+      "tests/**"
+    ],
+    "verify": [
+      "test -f pyproject.toml",
+      "test -f src/tmux_host/__init__.py",
+      "test -f docs/ui/state-model.md"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step_1",
+      "task": "Create the top-level repo directories and package roots for docs/ui, ops, profiles, proof, src/tmux_host, and tests so later packets have stable path anchors.",
+      "requirements": [
+        "Create directories only; do not add implementation logic in this step.",
+        "Preserve the source-first layout under src/tmux_host/.",
+        "Do not create alternate code roots such as lib/, app/, or dashboard/ outside src/tmux_host/ui/."
+      ],
+      "expected_files": [
+        "profiles/.gitkeep",
+        "ops/launchd/.gitkeep",
+        "ops/examples/.gitkeep",
+        "proof/.gitkeep",
+        "src/tmux_host/__init__.py",
+        "tests/unit/.gitkeep",
+        "tests/integration/.gitkeep",
+        "tests/fixtures/ui_state/.gitkeep"
+      ],
+      "validation": [
+        "test -d docs/ui",
+        "test -d src/tmux_host",
+        "test -d tests/fixtures/ui_state",
+        "test -f profiles/.gitkeep"
+      ]
+    },
+    {
+      "id": "step_2",
+      "task": "Create placeholder source modules for each approved subsystem boundary so subsequent packets can target exact files without inventing new structure.",
+      "requirements": [
+        "Use minimal placeholders only.",
+        "Do not implement lifecycle logic, adapter behavior, tmux mutation, or dashboard rendering beyond stub module presence.",
+        "Keep subsystem boundaries separate."
+      ],
+      "expected_files": [
+        "src/tmux_host/main.py",
+        "src/tmux_host/cli/__init__.py",
+        "src/tmux_host/cli/app.py",
+        "src/tmux_host/cli/renderers.py",
+        "src/tmux_host/core/lifecycle_service.py",
+        "src/tmux_host/profiles/models.py",
+        "src/tmux_host/profiles/loader.py",
+        "src/tmux_host/profiles/validator.py",
+        "src/tmux_host/adapters/registry.py",
+        "src/tmux_host/tmux/client.py",
+        "src/tmux_host/tmux/failure_cards.py",
+        "src/tmux_host/state/models.py",
+        "src/tmux_host/state/mapper.py",
+        "src/tmux_host/state/fixtures.py",
+        "src/tmux_host/ui/tokens/colors.py",
+        "src/tmux_host/ui/tokens/typography.py",
+        "src/tmux_host/ui/components/state_chip.py",
+        "src/tmux_host/ui/desktop/session_index.py",
+        "src/tmux_host/ui/desktop/profile_cockpit.py",
+        "src/tmux_host/ui/mobile/profile_cards.py",
+        "src/tmux_host/ui/mobile/profile_remote_panel.py",
+        "src/tmux_host/diagnostics/doctor.py",
+        "src/tmux_host/shared/constants.py"
+      ],
+      "validation": [
+        "python -m compileall src/tmux_host",
+        "test -f src/tmux_host/ui/mobile/profile_remote_panel.py",
+        "test -f src/tmux_host/adapters/registry.py"
+      ]
+    },
+    {
+      "id": "step_3",
+      "task": "Create docs/ui scaffold files for the shared UI state model, action matrix, component map, v1 cut line, and visual system so the UX packet series has stable documentation targets.",
+      "requirements": [
+        "Write placeholders or brief scaffold content only.",
+        "Do not author the full UX implementation in docs here.",
+        "Keep the docs aligned to the approved UI workstream names."
+      ],
+      "expected_files": [
+        "docs/ui/state-model.md",
+        "docs/ui/action-matrix.md",
+        "docs/ui/component-map.md",
+        "docs/ui/v1-cut-line.md",
+        "docs/ui/visual-system.md",
+        "README.md"
+      ],
+      "validation": [
+        "test -f docs/ui/state-model.md",
+        "test -f docs/ui/action-matrix.md",
+        "test -f docs/ui/component-map.md",
+        "test -f docs/ui/v1-cut-line.md",
+        "test -f docs/ui/visual-system.md"
+      ]
+    }
+  ]
+}

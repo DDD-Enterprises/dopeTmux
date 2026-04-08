@@ -1,0 +1,89 @@
+{
+  "id": "UX-TP-02",
+  "project": "tmux-host",
+  "target": "Implement the operator visual token system and reusable component primitives for the tmux-host dashboard.",
+  "invariants": [
+    "The UI must remain a derived supervisory surface, not a second source of truth.",
+    "Desktop and mobile must consume the same shared state model.",
+    "Neon accents are structural; state color and explicit text remain primary."
+  ],
+  "depends_on": [
+    "UX-TP-01"
+  ],
+  "series": {
+    "id": "tmux-host-ui-ux-series-v1",
+    "base_branch": "main",
+    "parent_tp_id": "UX-TP-01",
+    "final_packet": false
+  },
+  "commit": {
+    "message": "Implement UI tokens and operator components",
+    "allowlist": [
+      "docs/ui/visual-system.md",
+      "src/tmux_host/ui/tokens/**",
+      "src/tmux_host/ui/components/**",
+      "tests/unit/test_ui_*.py"
+    ]
+  },
+  "steps": [
+    {
+      "id": "step_1",
+      "task": "Define the shared visual tokens for colors, spacing, and typography with a dark matte base and structural neon accents.",
+      "requirements": [
+        "Use cyan, violet, and magenta as structural accents only.",
+        "State colors must remain explicit and outrank decorative accents.",
+        "Do not add glassmorphism or full-surface neon flood."
+      ],
+      "expected_files": [
+        "src/tmux_host/ui/tokens/colors.py",
+        "src/tmux_host/ui/tokens/spacing.py",
+        "src/tmux_host/ui/tokens/typography.py",
+        "docs/ui/visual-system.md"
+      ],
+      "validation": [
+        "python -m compileall src/tmux_host/ui/tokens",
+        "test -f docs/ui/visual-system.md"
+      ]
+    },
+    {
+      "id": "step_2",
+      "task": "Implement the core operator components for state chips, blocker panels, action buttons, pane cards, command panels, event feeds, and confirmation modals.",
+      "requirements": [
+        "Every component must render explicit text state where relevant.",
+        "Keep components generic and operator-oriented rather than page-specific."
+      ],
+      "expected_files": [
+        "src/tmux_host/ui/components/state_chip.py",
+        "src/tmux_host/ui/components/blocker_panel.py",
+        "src/tmux_host/ui/components/action_button.py",
+        "src/tmux_host/ui/components/pane_card.py",
+        "src/tmux_host/ui/components/command_panel.py",
+        "src/tmux_host/ui/components/event_feed.py",
+        "src/tmux_host/ui/components/confirm_modal.py"
+      ],
+      "validation": [
+        "python -m compileall src/tmux_host/ui/components",
+        "test -f src/tmux_host/ui/components/state_chip.py"
+      ]
+    },
+    {
+      "id": "step_3",
+      "task": "Add narrow unit tests for token and component contracts, especially explicit state text and reusable component presence.",
+      "requirements": [
+        "Do not start building full screens in this packet.",
+        "Keep tests focused on component and token contracts."
+      ],
+      "expected_files": [
+        "tests/unit/test_ui_tokens.py",
+        "tests/unit/test_state_chip.py"
+      ],
+      "validation": [
+        "pytest -q tests/unit/test_ui_tokens.py tests/unit/test_state_chip.py"
+      ],
+      "context_files": [
+        "src/tmux_host/ui/tokens/colors.py",
+        "src/tmux_host/ui/components/state_chip.py"
+      ]
+    }
+  ]
+}
