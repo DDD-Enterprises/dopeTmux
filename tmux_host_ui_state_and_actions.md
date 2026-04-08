@@ -898,4 +898,3 @@ If it cannot do those five things cleanly, it is not v1 complete. It is just dre
 Next design item:
 
 - generate the UX/UI-focused task packet series
-

@@ -1,0 +1,69 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editor state
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.pyc.*
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.hypothesis/
+.coverage
+.coverage.*
+htmlcov/
+*.egg-info/
+build/
+dist/
+pip-wheel-metadata/
+
+# Node / frontend artifacts
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local env and secrets
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+
+# Logs and scratch files
+*.log
+*.out
+*.err
+*.trace
+*.jsonl
+*.tmp
+*.temp
+*.bak
+*.backup
+*.orig
+*.rej
+tmp/
+temp/
+
+# OS leftovers
+Thumbs.db
+Desktop.ini
