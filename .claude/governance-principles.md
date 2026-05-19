@@ -182,41 +182,43 @@ Before changing shared artifacts determine:
 * caches
 * deprecated surfaces
 
+dopeTmux is the tmux-host / dopeTask bootstrap surface — design notes, operator prompts, and bundle materials. **Runtime authority lives in dopeTask, not here.** Canonical writers in this repo:
+
+* **dopeTask bundle manifest**: `dopetask_bundle.yaml`
+* **Bundle packets**: `BUNDLES/` (operator-curated TPs and validation files)
+* **Operator profile/templates**: `ops/`
+* **Run outputs (read-only artifacts)**: `runs/` and `out/` (deterministic reports)
+* **Project doctrine surfaces**: `AGENTS.md`, `CLAUDE.md`, `CODEX.md`, `PROJECT_INSTRUCTIONS.md`
+
+Source code, when introduced, should follow the source-first layout described in the task packets — until then, treat this repo as documentation + bootstrap materials.
+
 Do not silently fork contracts downstream. Preserve separation between:
 
-* truth vs projection
-* authority vs advisory
-* runtime vs audit
-* execution vs analysis
-
-If the project's `AGENTS.md` defines architecture boundaries (canonical writers per service / module), treat that section as authoritative. Customize this section per repo to list the project's actual canonical writers.
+* truth (dopeTask runtime decisions, proof artifacts) vs projection (these design notes)
+* authority (dopeTask kernel) vs advisory (this repo's prompts and templates)
+* runtime (dopeTask) vs audit (operator review of bundle packets here)
 
 ---
 
 ## Contract-Sensitive Surfaces
 
-Treat as high-risk:
+Treat as high-risk in this repo:
 
-* schemas (JSON Schema, OpenAPI, protobuf, SQL DDL)
-* manifests (MCP server manifests, plugin manifests, package metadata)
-* migrations
-* event payloads (queues, streams, websockets)
-* serializers / deserializers
-* MCP tool input/output shapes
-* APIs (REST, GraphQL, RPC contracts)
-* proof bundles / audit artifacts
-* checkpoints / replay state
-* hook dispatchers and lifecycle scripts
+* **`dopetask_bundle.yaml`** — bundle manifest consumed by dopeTask
+* **`BUNDLES/`** — packet contents and bundle-local validation; schema mismatches break execution
+* **`ops/` operator profile and exported prompt** — operator surface; changes affect every session
+* **`tmux_host_ui_state_and_actions.md`** and **`tmux_host_ui_ux_mobile_design.md`** — design contracts; downstream tmux-host implementations key off these
+* **Pre-commit hooks** (root-level `.pre-commit-config.yaml` if present)
 
 Before modifying any of these:
 
-1. identify the canonical writer
-2. inspect consumers
-3. inspect replay behavior
+1. identify the canonical writer (often `ops/` template or a TP under `BUNDLES/`)
+2. inspect consumers (dopeTask runtime, downstream tmux-host implementations)
+3. inspect replay behavior in dopeTask
 4. validate compatibility
 5. review downstream impact
 
-Unknown contract implications = stop and investigate.
+Source code does not yet live here. If introducing code, follow the source-first layout from the active TP. Unknown contract implications = stop and investigate.
 
 ---
 
